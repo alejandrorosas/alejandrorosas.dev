@@ -1,0 +1,35 @@
+name: Jekyll Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    container: ruby:2.7
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup environment
+        run: |
+          bundle install
+          git config --global user.email "actions@users.noreply.github.com"
+          git config --global user.name "Github Pages Deploy"
+          git remote add github "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
+      - name: Get commit message
+        run: echo ::set-env name=COMMIT_MESSAGE::$(git log --format=%B -n 1 ${{ github.event.after }})
+      - name: Build
+        run: jekyll build
+      - name: Deploy
+        run: |
+          cp -r _site docs
+          git checkout master
+          git add -A
+          git commit -m "Github Pages deploy: $COMMIT_MESSAGE"
+          git pull --rebase github master
+          git push github master
+    env:
+      LC_ALL: "C.UTF-8"
+      LANG: "en_US.UTF-8"
+      LANGUAGE: "en_US.UTF-8"
