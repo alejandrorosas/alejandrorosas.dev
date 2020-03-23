@@ -26,7 +26,7 @@ jobs:
           cp -r _site docs
           git checkout master
           git add -A
-          git commit -m "Github Pages deploy: $COMMIT_MESSAGE"
+          git diff-index --quiet HEAD || git commit -m "Github Pages deploy: $COMMIT_MESSAGE"
           git pull --rebase github master
           git push github master
     env:
